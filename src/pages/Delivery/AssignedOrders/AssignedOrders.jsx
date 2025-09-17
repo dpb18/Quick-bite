@@ -1,60 +1,46 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useAuth } from '../../../context/AuthContext'
+import DeliveryOrderService from '../../../services/DeliveryOrderService'
 import './AssignedOrders.css'
 
 const AssignedOrders = () => {
-  const [orders] = useState([
-    {
-      id: 'ORD001',
-      customerName: 'John Doe',
-      customerPhone: '+91 9876543210',
-      address: '123 Main Street, City, State - 123456',
-      items: [
-        { name: 'Margherita Pizza', quantity: 1, price: 299 },
-        { name: 'Garlic Bread', quantity: 2, price: 149 }
-      ],
-      total: 597,
-      status: 'ready_for_pickup',
-      orderTime: '2:30 PM',
-      restaurant: 'Pizza Palace'
-    },
-    {
-      id: 'ORD002',
-      customerName: 'Jane Smith',
-      customerPhone: '+91 9123456789',
-      address: '456 Oak Avenue, City, State - 654321',
-      items: [
-        { name: 'Chicken Biryani', quantity: 1, price: 349 },
-        { name: 'Raita', quantity: 1, price: 59 }
-      ],
-      total: 408,
-      status: 'picked_up',
-      orderTime: '1:45 PM',
-      restaurant: 'Biryani House'
-    },
-    {
-      id: 'ORD003',
-      customerName: 'Mike Johnson',
-      customerPhone: '+91 9087654321',
-      address: '789 Pine Road, City, State - 987654',
-      items: [
-        { name: 'Burger Combo', quantity: 2, price: 299 },
-        { name: 'French Fries', quantity: 1, price: 99 }
-      ],
-      total: 697,
-      status: 'ready_for_pickup',
-      orderTime: '3:15 PM',
-      restaurant: 'Burger Junction'
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const { user } = useAuth()
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchAssignedOrders()
     }
-  ])
+  }, [user])
+
+  const fetchAssignedOrders = async () => {
+    try {
+      setLoading(true)
+      const assignedOrders = await DeliveryOrderService.getAssignedOrders(user.id)
+      setOrders(assignedOrders)
+      setError(null)
+    } catch (err) {
+      console.error('Error fetching assigned orders:', err)
+      setError('Failed to load assigned orders')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'ready_for_pickup':
-        return '#ff9800'
-      case 'picked_up':
+      case 'Out for Delivery':
         return '#2196f3'
-      case 'delivered':
+      case 'Order Ready for Pickup':
+        return '#ff9800'
+      case 'Delivered':
         return '#4caf50'
+      case 'Order Cancelled':
+        return '#f44336'
+      case 'Food Processing':
+        return '#ffc107'
       default:
         return '#666'
     }
@@ -62,20 +48,86 @@ const AssignedOrders = () => {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'ready_for_pickup':
+      case 'Out for Delivery':
+        return 'Out for Delivery'
+      case 'Order Ready for Pickup':
         return 'Ready for Pickup'
-      case 'picked_up':
-        return 'Picked Up'
-      case 'delivered':
+      case 'Delivered':
         return 'Delivered'
+      case 'Order Cancelled':
+        return 'Cancelled'
+      case 'Food Processing':
+        return 'Processing'
       default:
         return status
     }
   }
 
-  const handleStatusUpdate = (orderId, newStatus) => {
-    // Here you would typically update the order status via API
-    console.log(`Updating order ${orderId} to status: ${newStatus}`)
+  const handleAcceptOrder = async (orderId) => {
+    try {
+      await DeliveryOrderService.acceptOrder(orderId, user.id)
+      await fetchAssignedOrders() // Refresh the list
+      alert('Order accepted successfully!')
+    } catch (error) {
+      console.error('Error accepting order:', error)
+      alert('Failed to accept order. Please try again.')
+    }
+  }
+
+  const handleRejectOrder = async (orderId) => {
+    if (window.confirm('Are you sure you want to reject this order?')) {
+      try {
+        await DeliveryOrderService.rejectOrder(orderId, user.id)
+        await fetchAssignedOrders() // Refresh the list
+        alert('Order rejected successfully!')
+      } catch (error) {
+        console.error('Error rejecting order:', error)
+        alert('Failed to reject order. Please try again.')
+      }
+    }
+  }
+
+  const handleMarkAsDelivered = async (orderId) => {
+    if (window.confirm('Are you sure you want to mark this order as delivered?')) {
+      try {
+        await DeliveryOrderService.markAsDelivered(orderId, user.id)
+        await fetchAssignedOrders() // Refresh the list
+        alert('Order marked as delivered successfully!')
+      } catch (error) {
+        console.error('Error marking order as delivered:', error)
+        alert('Failed to update order status. Please try again.')
+      }
+    }
+  }
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  if (loading) {
+    return (
+      <div className="assigned-orders">
+        <div className="loading">Loading assigned orders...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="assigned-orders">
+        <div className="error">
+          {error}
+          <button onClick={fetchAssignedOrders}>Retry</button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -83,73 +135,92 @@ const AssignedOrders = () => {
       <div className="orders-header">
         <h1>Assigned Orders</h1>
         <p>Manage your delivery assignments</p>
+        <button onClick={fetchAssignedOrders} className="refresh-btn">
+          🔄 Refresh
+        </button>
       </div>
 
       <div className="orders-list">
-        {orders.map(order => (
-          <div key={order.id} className="order-card">
-            <div className="order-header">
-              <div className="order-info">
-                <h3>Order #{order.id}</h3>
-                <span 
-                  className="order-status"
-                  style={{ backgroundColor: getStatusColor(order.status) }}
-                >
-                  {getStatusText(order.status)}
-                </span>
-              </div>
-              <div className="order-time">
-                <span>Ordered at: {order.orderTime}</span>
-                <span>Restaurant: {order.restaurant}</span>
-              </div>
-            </div>
-
-            <div className="customer-details">
-              <h4>Customer Details</h4>
-              <p><strong>Name:</strong> {order.customerName}</p>
-              <p><strong>Phone:</strong> {order.customerPhone}</p>
-              <p><strong>Address:</strong> {order.address}</p>
-            </div>
-
-            <div className="order-items">
-              <h4>Order Items</h4>
-              {order.items.map((item, index) => (
-                <div key={index} className="order-item">
-                  <span>{item.name} x {item.quantity}</span>
-                  <span>₹{item.price * item.quantity}</span>
-                </div>
-              ))}
-              <div className="order-total">
-                <strong>Total: ₹{order.total}</strong>
-              </div>
-            </div>
-
-            <div className="order-actions">
-              {order.status === 'ready_for_pickup' && (
-                <button 
-                  className="action-btn pickup-btn"
-                  onClick={() => handleStatusUpdate(order.id, 'picked_up')}
-                >
-                  Mark as Picked Up
-                </button>
-              )}
-              {order.status === 'picked_up' && (
-                <button 
-                  className="action-btn deliver-btn"
-                  onClick={() => handleStatusUpdate(order.id, 'delivered')}
-                >
-                  Mark as Delivered
-                </button>
-              )}
-              <button className="action-btn call-btn">
-                📞 Call Customer
-              </button>
-              <button className="action-btn navigate-btn">
-                🗺️ Navigate
-              </button>
-            </div>
+        {orders.length === 0 ? (
+          <div className="no-orders">
+            <h3>No assigned orders</h3>
+            <p>You don't have any orders assigned to you at the moment.</p>
           </div>
-        ))}
+        ) : (
+          orders.map(order => (
+            <div key={order.order_id} className="order-card">
+              <div className="order-header">
+                <div className="order-info">
+                  <h3>Order #{order.order_id}</h3>
+                  <span 
+                    className="order-status"
+                    style={{ backgroundColor: getStatusColor(order.status) }}
+                  >
+                    {getStatusText(order.status)}
+                  </span>
+                </div>
+                <div className="order-time">
+                  <span>Ordered: {formatDate(order.order_date)}</span>
+                  <span>Total: ₹{order.total_price}</span>
+                </div>
+              </div>
+
+              <div className="customer-details">
+                <h4>Customer Details</h4>
+                <p><strong>Name:</strong> {order.customer_name || 'N/A'}</p>
+                <p><strong>Phone:</strong> {order.customer_phone || 'N/A'}</p>
+                <p><strong>Address:</strong> {order.customer_address || 'N/A'}</p>
+              </div>
+
+              <div className="order-items">
+                <h4>Order Summary</h4>
+                <div className="order-item">
+                  <span>Total Items: {order.total_qty}</span>
+                  <span>Amount: ₹{order.total_price}</span>
+                </div>
+              </div>
+
+              <div className="order-actions">
+                {(order.status === 'Order Ready for Pickup' || order.status === 'Out for Delivery') && order.status !== 'Order Cancelled' && order.status !== 'Delivered' && (
+                  <>
+                    <button 
+                      className="action-btn accept-btn"
+                      onClick={() => handleAcceptOrder(order.order_id)}
+                      disabled={order.status === 'Out for Delivery'}
+                    >
+                      {order.status === 'Out for Delivery' ? '✅ Accepted' : '✅ Accept Order'}
+                    </button>
+                    <button 
+                      className="action-btn reject-btn"
+                      onClick={() => handleRejectOrder(order.order_id)}
+                      disabled={order.status === 'Out for Delivery'}
+                    >
+                      ❌ Reject Order
+                    </button>
+                  </>
+                )}
+                {order.status === 'Out for Delivery' && (
+                  <button 
+                    className="action-btn deliver-btn"
+                    onClick={() => handleMarkAsDelivered(order.order_id)}
+                  >
+                    📦 Mark as Delivered
+                  </button>
+                )}
+                {order.status === 'Delivered' && (
+                  <div className="delivered-status">
+                    <span className="delivered-badge">✅ Order Delivered</span>
+                  </div>
+                )}
+                {order.status === 'Order Cancelled' && (
+                  <div className="cancelled-status">
+                    <span className="cancelled-badge">❌ Order Cancelled</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   )

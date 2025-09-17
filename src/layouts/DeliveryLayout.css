@@ -89,6 +89,82 @@
   opacity: 0.9;
 }
 
+/* Availability Toggle Section */
+.availability-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.availability-header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.availability-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.toggle-input {
+  display: none;
+}
+
+.toggle-label {
+  position: relative;
+  width: 50px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 26px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.toggle-input:checked + .toggle-label {
+  background: #4CAF50;
+  border-color: #4CAF50;
+}
+
+.toggle-input:disabled + .toggle-label {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-input:checked + .toggle-label .toggle-slider {
+  transform: translateX(24px);
+}
+
+.toggle-text {
+  font-size: 0.85rem;
+  color: white;
+  font-weight: 500;
+  min-width: 60px;
+  text-align: center;
+}
+
 .logout-btn {
   width: 100%;
   padding: 10px;
@@ -159,5 +235,18 @@
 
   .delivery-content.sidebar-open {
     margin-left: 0;
+  }
+  
+  .availability-section {
+    padding: 12px;
+  }
+  
+  .toggle-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .toggle-text {
+    font-size: 0.8rem;
   }
 }

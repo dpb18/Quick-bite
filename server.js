@@ -132,6 +132,31 @@ app.delete('/delivery-partners/:id', (req, res) => {
     });
 });
 
+// Update delivery partner availability
+app.put('/delivery-partners/:id/availability', (req, res) => {
+    const { id } = req.params;
+    const { available } = req.body;
+    
+    const sql = 'UPDATE delivery_partners SET available=? WHERE partner_id=?';
+    db.query(sql, [available, id], (err, result) => {
+        if (err) return res.status(500).send(err);
+        res.send({ message: 'Delivery partner availability updated', available: available });
+    });
+});
+
+// Get delivery partner availability
+app.get('/delivery-partners/:id/availability', (req, res) => {
+    const { id } = req.params;
+    const sql = 'SELECT available FROM delivery_partners WHERE partner_id=?';
+    db.query(sql, [id], (err, result) => {
+        if (err) return res.status(500).send(err);
+        if (result.length === 0) {
+            return res.status(404).send({ message: 'Delivery partner not found' });
+        }
+        res.send({ available: result[0].available });
+    });
+});
+
 // User Registration endpoint
 app.post('/register', async (req, res) => {
     const { name, email, password, phone, location, role } = req.body;
@@ -363,6 +388,260 @@ app.get('/debug/admin-test', (req, res) => {
             });
         }
     });
+});
+
+// ==============================================================
+// ORDER ENDPOINTS
+// ==============================================================
+
+// Place a new order
+app.post('/api/orders', (req, res) => {
+    const { 
+        total_qty, 
+        total_price, 
+        otp_order, 
+        status = 'Food Processing', 
+        customer_id, // Remove default value to ensure we use the actual customer_id from frontend
+        delivery_info,
+        items 
+    } = req.body;
+
+    // Validate that customer_id is provided
+    if (!customer_id) {
+        return res.status(400).json({ error: 'Customer ID is required to place an order' });
+    }
+
+    // Insert order into database
+    db.query(
+        'INSERT INTO orders (total_qty, total_price, otp_order, status, customer_id) VALUES (?, ?, ?, ?, ?)',
+        [total_qty, total_price, otp_order, status, customer_id],
+        (err, result) => {
+            if (err) {
+                console.error('Error inserting order:', err);
+                return res.status(500).json({ error: 'Failed to place order', details: err.message });
+            }
+
+            const orderId = result.insertId;
+
+            // For now, we'll store delivery_info and items as JSON in a separate table or return success
+            // You might want to create separate tables for order_items and delivery_info
+            
+            res.json({ 
+                success: true, 
+                order: {
+                    order_id: orderId,
+                    total_qty,
+                    total_price,
+                    otp_order,
+                    status,
+                    customer_id,
+                    order_date: new Date().toISOString(),
+                    delivery_info,
+                    items
+                }
+            });
+        }
+    );
+});
+
+// Get orders for a specific customer
+app.get('/api/orders/customer/:customerId', (req, res) => {
+    const customerId = req.params.customerId;
+    
+    db.query(
+        'SELECT * FROM orders WHERE customer_id = ? ORDER BY order_date DESC',
+        [customerId],
+        (err, results) => {
+            if (err) {
+                console.error('Error fetching orders:', err);
+                return res.status(500).json({ error: 'Failed to fetch orders', details: err.message });
+            }
+            res.json(results);
+        }
+    );
+});
+
+// Get order by ID
+app.get('/api/orders/:orderId', (req, res) => {
+    const orderId = req.params.orderId;
+    
+    db.query(
+        'SELECT * FROM orders WHERE order_id = ?',
+        [orderId],
+        (err, results) => {
+            if (err) {
+                console.error('Error fetching order:', err);
+                return res.status(500).json({ error: 'Failed to fetch order', details: err.message });
+            }
+            
+            if (results.length === 0) {
+                return res.status(404).json({ error: 'Order not found' });
+            }
+            
+            res.json(results[0]);
+        }
+    );
+});
+
+// Update order status
+app.put('/api/orders/:orderId/status', (req, res) => {
+    const orderId = req.params.orderId;
+    const { status, delivery_partner_id } = req.body;
+    
+    let query = 'UPDATE orders SET status = ?';
+    let params = [status];
+    
+    if (delivery_partner_id) {
+        query += ', delivery_partner_id = ?';
+        params.push(delivery_partner_id);
+    }
+    
+    query += ' WHERE order_id = ?';
+    params.push(orderId);
+    
+    db.query(query, params, (err, result) => {
+        if (err) {
+            console.error('Error updating order status:', err);
+            return res.status(500).json({ error: 'Failed to update order status', details: err.message });
+        }
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+        
+        res.json({ success: true, message: 'Order status updated successfully' });
+    });
+});
+
+// Assign delivery partner to order
+app.put('/api/orders/:orderId/assign', (req, res) => {
+    const orderId = req.params.orderId;
+    const { delivery_partner_id } = req.body;
+    
+    db.query(
+        'UPDATE orders SET delivery_partner_id = ?, status = ? WHERE order_id = ?',
+        [delivery_partner_id, 'Out for Delivery', orderId],
+        (err, result) => {
+            if (err) {
+                console.error('Error assigning delivery partner:', err);
+                return res.status(500).json({ error: 'Failed to assign delivery partner', details: err.message });
+            }
+            
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: 'Order not found' });
+            }
+            
+            res.json({ success: true, message: 'Delivery partner assigned successfully' });
+        }
+    );
+});
+
+// Get all orders (for admin)
+app.get('/api/orders', (req, res) => {
+    db.query(
+        `SELECT o.*, c.customer_name, dp.name as delivery_partner_name 
+         FROM orders o 
+         LEFT JOIN customer c ON o.customer_id = c.customer_id 
+         LEFT JOIN delivery_partners dp ON o.delivery_partner_id = dp.partner_id 
+         ORDER BY o.order_date DESC`,
+        (err, results) => {
+            if (err) {
+                console.error('Error fetching all orders:', err);
+                return res.status(500).json({ error: 'Failed to fetch orders', details: err.message });
+            }
+            res.json(results);
+        }
+    );
+});
+
+// Get orders for a specific delivery partner
+app.get('/api/orders/delivery-partner/:partnerId', (req, res) => {
+    const partnerId = req.params.partnerId;
+    
+    db.query(
+        `SELECT o.*, c.customer_name, c.contact_No as customer_phone, c.location as customer_address
+         FROM orders o 
+         LEFT JOIN customer c ON o.customer_id = c.customer_id 
+         WHERE o.delivery_partner_id = ? 
+         ORDER BY o.order_date DESC`,
+        [partnerId],
+        (err, results) => {
+            if (err) {
+                console.error('Error fetching delivery partner orders:', err);
+                return res.status(500).json({ error: 'Failed to fetch orders', details: err.message });
+            }
+            res.json(results);
+        }
+    );
+});
+
+// Accept order by delivery partner
+app.put('/api/orders/:orderId/accept', (req, res) => {
+    const orderId = req.params.orderId;
+    const { delivery_partner_id } = req.body;
+    
+    db.query(
+        'UPDATE orders SET status = ?, accepted_by_partner = ? WHERE order_id = ? AND delivery_partner_id = ?',
+        ['Out for Delivery', true, orderId, delivery_partner_id],
+        (err, result) => {
+            if (err) {
+                console.error('Error accepting order:', err);
+                return res.status(500).json({ error: 'Failed to accept order', details: err.message });
+            }
+            
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: 'Order not found or not assigned to you' });
+            }
+            
+            res.json({ success: true, message: 'Order accepted and marked as Out for Delivery' });
+        }
+    );
+});
+
+// Reject order by delivery partner
+app.put('/api/orders/:orderId/reject', (req, res) => {
+    const orderId = req.params.orderId;
+    const { delivery_partner_id } = req.body;
+    
+    db.query(
+        'UPDATE orders SET status = ?, delivery_partner_id = NULL, accepted_by_partner = ? WHERE order_id = ? AND delivery_partner_id = ?',
+        ['Order Cancelled', false, orderId, delivery_partner_id],
+        (err, result) => {
+            if (err) {
+                console.error('Error rejecting order:', err);
+                return res.status(500).json({ error: 'Failed to reject order', details: err.message });
+            }
+            
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: 'Order not found or not assigned to you' });
+            }
+            
+            res.json({ success: true, message: 'Order rejected and marked as cancelled' });
+        }
+    );
+});
+
+// Mark order as delivered by delivery partner
+app.put('/api/orders/:orderId/delivered', (req, res) => {
+    const orderId = req.params.orderId;
+    const { delivery_partner_id } = req.body;
+    
+    db.query(
+        'UPDATE orders SET status = ? WHERE order_id = ? AND delivery_partner_id = ?',
+        ['Delivered', orderId, delivery_partner_id],
+        (err, result) => {
+            if (err) {
+                console.error('Error marking order as delivered:', err);
+                return res.status(500).json({ error: 'Failed to update order status', details: err.message });
+            }
+            
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: 'Order not found or not assigned to you' });
+            }
+            
+            res.json({ success: true, message: 'Order marked as delivered successfully' });
+        }
+    );
 });
 
 app.listen(3001, () => {

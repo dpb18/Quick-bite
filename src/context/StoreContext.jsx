@@ -27,6 +27,10 @@ const StoreContextProvider = (props) => {
     const removeFromCart = (itemId) => {
         setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] - 1 }))
     }
+
+    const clearCart = () => {
+        setCartItems({})
+    }
     
     const getTotalCartAmount = () => {
         let totalAmount = 0;
@@ -86,6 +90,7 @@ const StoreContextProvider = (props) => {
         setCartItems,
         addToCart,
         removeFromCart,
+        clearCart,
         getTotalCartAmount,
         getDiscountedTotal,
         searchFoodByName,

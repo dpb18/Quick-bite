@@ -4,6 +4,29 @@
 
 .orders-header {
   margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.orders-header div {
+  flex: 1;
+}
+
+.refresh-btn {
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+  background: linear-gradient(135deg, #1976D2, #1565C0);
+  transform: translateY(-1px);
 }
 
 .orders-header h1 {
@@ -15,6 +38,40 @@
 .orders-header p {
   color: #666;
   font-size: 1.1rem;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.error button {
+  margin-top: 15px;
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.no-orders {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.no-orders h3 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.no-orders p {
+  color: #666;
 }
 
 .orders-list {
@@ -155,22 +212,58 @@
   background: #388e3c;
 }
 
-.call-btn {
-  background: #2196f3;
+.accept-btn {
+  background: linear-gradient(135deg, #4caf50, #388e3c);
   color: white;
 }
 
-.call-btn:hover {
-  background: #1976d2;
+.accept-btn:hover {
+  background: linear-gradient(135deg, #388e3c, #2e7d32);
+  transform: translateY(-1px);
 }
 
-.navigate-btn {
-  background: #9c27b0;
+.reject-btn {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
   color: white;
 }
 
-.navigate-btn:hover {
-  background: #7b1fa2;
+.reject-btn:hover {
+  background: linear-gradient(135deg, #d32f2f, #c62828);
+  transform: translateY(-1px);
+}
+
+.delivered-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+}
+
+.delivered-badge {
+  background: linear-gradient(135deg, #4caf50, #388e3c);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.cancelled-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+}
+
+.cancelled-badge {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
 }
 
 /* Responsive Design */
