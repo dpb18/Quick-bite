@@ -1,0 +1,208 @@
+.assigned-orders {
+  padding: 20px;
+}
+
+.orders-header {
+  margin-bottom: 30px;
+}
+
+.orders-header h1 {
+  color: #333;
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.orders-header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.order-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  border-left: 4px solid #2196F3;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.order-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.order-info h3 {
+  color: #333;
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.order-status {
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.order-time {
+  text-align: right;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.order-time span {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.customer-details {
+  margin-bottom: 20px;
+}
+
+.customer-details h4 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+.customer-details p {
+  color: #666;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.order-items {
+  margin-bottom: 20px;
+}
+
+.order-items h4 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.order-item:last-child {
+  border-bottom: none;
+}
+
+.order-total {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 2px solid #eee;
+  text-align: right;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.order-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.pickup-btn {
+  background: #ff9800;
+  color: white;
+}
+
+.pickup-btn:hover {
+  background: #f57c00;
+}
+
+.deliver-btn {
+  background: #4caf50;
+  color: white;
+}
+
+.deliver-btn:hover {
+  background: #388e3c;
+}
+
+.call-btn {
+  background: #2196f3;
+  color: white;
+}
+
+.call-btn:hover {
+  background: #1976d2;
+}
+
+.navigate-btn {
+  background: #9c27b0;
+  color: white;
+}
+
+.navigate-btn:hover {
+  background: #7b1fa2;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .assigned-orders {
+    padding: 15px;
+  }
+  
+  .orders-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .order-card {
+    padding: 20px;
+  }
+  
+  .order-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .order-time {
+    text-align: left;
+  }
+  
+  .order-actions {
+    flex-direction: column;
+  }
+  
+  .action-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
