@@ -194,3 +194,15 @@ This project is licensed under the MIT License.
 For questions or support, please contact the development team.)
 
 
+## Troubleshooting & Notes
+
+### If things break during setup:
+
+1. **Getting dependency errors on `npm i`?**
+   If npm throws a fit about peer dependencies, just bypass it with the legacy flag. It happens because of some mismatched package versions:
+   ```bash
+   npm install --legacy-peer-deps
+
+
+
+
