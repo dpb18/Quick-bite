@@ -203,6 +203,27 @@ For questions or support, please contact the development team.)
    ```bash
    npm install --legacy-peer-deps
 
+   2. **Ports already in use?**
+Sometimes Vite gets stubborn and throws a "port 5173 is already in use" error.
+If you see this, just kill the terminal process or run `npx kill-port 5173`.
+Alternatively, you can just let Vite pick the next available port, but watch out because it might mess with your CORS setup.
+
+3. **CORS issues during local dev**
+If the frontend refuses to talk to the backend, double-check your `.env` file first.
+Make sure `VITE_API_URL` matches exactly where your local server is running.
+Watch out for trailing slashes! They break the axios interceptors right now.
+
+### Known Quirks & Bugs
+- The mobile navigation menu sometimes jitters a bit on iOS Safari.
+- Dark mode toggle might flash white for a split second on initial page load.
+- Uploading a profile picture larger than 5MB fails silently (we really need to add error toasts here).
+
+### What's Next
+Honestly, the main priority right now is getting our test coverage up.
+We also want to eventually migrate the messy state management over to Redux Toolkit.
+That's a pretty massive refactor though, so it's sitting on the backburner for now.
+Drop a message in the Discord channel if you get completely stuck setting things up!
+
 
 
 
