@@ -224,6 +224,59 @@ We also want to eventually migrate the messy state management over to Redux Tool
 That's a pretty massive refactor though, so it's sitting on the backburner for now.
 Drop a message in the Discord channel if you get completely stuck setting things up!
 
+---
+
+## ⚙️ Environment Variables
+
+To run this project locally, you will need to add the following environment variables. Create a `.env` file in the root directory and add the following:
+
+`VITE_API_URL` - The base URL for the backend API (e.g., `http://localhost:5000/api`)
+`VITE_MAPS_API_KEY` - Google Maps or Mapbox API key for live delivery tracking
+`VITE_STRIPE_PUBLIC_KEY` - Public key for Stripe payment gateway integration
+`VITE_IMAGE_BUCKET_URL` - URL for the cloud storage bucket hosting product images
+
+---
+
+## 🔌 API Integration Mockup
+
+The frontend communicates with a RESTful backend API. Below are the primary endpoints expected by the frontend services:
+
+### Auth Endpoints
+- `POST /api/auth/register` - Register a new user (Admin, Customer, Delivery)
+- `POST /api/auth/login` - Authenticate user and receive JWT
+- `GET /api/auth/profile` - Get current user profile details using Bearer token
+
+### Customer Endpoints
+- `GET /api/products` - Fetch all available food items and categories
+- `GET /api/products/:id` - Fetch single food item details and reviews
+- `POST /api/orders` - Place a new food order with cart data
+- `GET /api/orders/my-orders` - Fetch the authenticated user's order history
+
+### Delivery Partner Endpoints
+- `GET /api/delivery/assigned` - Get orders currently assigned to the partner
+- `PUT /api/delivery/status/:orderId` - Update delivery status (e.g., Picked Up, Delivered)
+
+### Admin Endpoints
+- `POST /api/admin/products` - Add a new product (Requires Admin Role)
+- `PUT /api/admin/products/:id` - Update an existing product
+- `DELETE /api/admin/products/:id` - Remove a product from the catalog
+- `GET /api/admin/dashboard-stats` - Get overall platform revenue and user statistics
+
+---
+
+## 🧠 State Management Architecture
+
+We utilize React's Context API combined with `useReducer` for complex state management. This avoids prop drilling while maintaining a lightweight bundle size.
+
+### StoreContext (`/src/context/StoreContext.jsx`)
+Handles the global e-commerce state:
+- **Cart State**: Tracks items, quantities, subtotal, and tax calculations.
+- **Product Catalog**: Caches the list of fetched products to minimize redundant API calls.
+- **Search & Filters**: Maintains active search queries, price ranges, and category filters.
+
+### AuthContext (`/src/context/AuthContext.jsx`)
+Manages session data and role verification:
+
 
 
 
