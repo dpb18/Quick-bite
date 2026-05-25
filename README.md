@@ -276,7 +276,45 @@ Handles the global e-commerce state:
 
 ### AuthContext (`/src/context/AuthContext.jsx`)
 Manages session data and role verification:
+#### 👨‍💼 Admin Features
+- Comprehensive dashboard with real-time sales and order metrics
+- Manage restaurant inventory (add, edit, or delete food items)
+- Oversee delivery partner assignments and active delivery routes
+- View and resolve customer support tickets and refunds
 
+---
+
+## 🛠️ Tech Stack
+
+**Frontend Framework & Styling:**
+- **React.js (Vite)** - For a fast, component-driven user interface
+- **Tailwind CSS** - For responsive, utility-first styling and animations
+- **React Router DOM** - For seamless client-side navigation and protected routes
+
+**State Management & Integration:**
+- **Context API** - For lightweight global state (Auth & Cart)
+- **Axios** - For intercepting and handling backend API requests
+- **Stripe.js** - For secure, client-side payment tokenization
+
+---
+
+## 📂 Folder Structure
+
+```text
+quickbite-frontend/
+├── public/            # Static assets (favicons, web manifest)
+├── src/
+│   ├── assets/        # Local images, icons, and global stylesheets
+│   ├── components/    # Reusable UI components (Buttons, Cards, Modals)
+│   ├── context/       # Global state providers (AuthContext, StoreContext)
+│   ├── pages/         # Route-level components (Home, Cart, AdminDashboard)
+│   ├── services/      # API integration and Axios configuration
+│   ├── utils/         # Helper functions, formatters, and constants
+│   ├── App.jsx        # Root application component with route definitions
+│   └── main.jsx       # React application entry point
+├── .env.example       # Template for required environment variables
+├── package.json       # Project dependencies and NPM scripts
+└── vite.config.js     # Vite bundler and plugin configuration
 
 
 
