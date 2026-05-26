@@ -316,5 +316,52 @@ quickbite-frontend/
 ├── package.json       # Project dependencies and NPM scripts
 └── vite.config.js     # Vite bundler and plugin configuration
 
+#include <iostream>
+#include <string>
+#include <cctype>
+
+// Function to check if a string is a palindrome
+bool isPalindrome(const std::string& str) {
+    int left = 0;
+    int right = str.length() - 1;
+
+    while (left < right) {
+        // Skip non-alphanumeric characters from the left
+        while (left < right && !std::isalnum(str[left])) {
+            left++;
+        }
+        // Skip non-alphanumeric characters from the right
+        while (left < right && !std::isalnum(str[right])) {
+            right--;
+        }
+
+        // Compare the characters (converted to lowercase to ignore case)
+        if (std::tolower(str[left]) != std::tolower(str[right])) {
+            return false; // Mismatch found, not a palindrome
+        }
+
+        // Move pointers towards the middle
+        left++;
+        right--;
+    }
+
+    return true; // All characters matched
+}
+
+int main() {
+    std::string userInput;
+
+    std::cout << "Enter a word or phrase: ";
+    std::getline(std::cin, userInput);
+
+    if (isPalindrome(userInput)) {
+        std::cout << "\nYes! \"" << userInput << "\" is a palindrome." << std::endl;
+    } else {
+        std::cout << "\nNo, \"" << userInput << "\" is not a palindrome." << std::endl;
+    }
+
+    return 0;
+}
+
 
 
